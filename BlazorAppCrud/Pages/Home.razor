@@ -1,0 +1,72 @@
+﻿@page "/"
+
+@using BlazorAppCrud.Models
+@using BlazorAppCrud.Services
+@inject IClienteService ClienteService
+
+<PageTitle>Clientes</PageTitle>
+
+<h1>Clientes</h1>
+ 
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th style="width: 15%">NOMBRE</th>
+            <th style="width: 15%">EDAD</th>
+            <th style="width: 15%">EMAIL</th>
+            
+            <th style="width: 25%"></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (clientes != null)
+        {
+            foreach (var cliente in clientes)
+            {
+                <tr>
+                    <td>@cliente.nombre</td>
+                    <td>@cliente.edad</td>
+                    <td>@cliente.email</td>
+                  
+                    <td style="white-space: nowrap">
+                        <NavLink href="@($"clientes/edit/{cliente.id}")" class="btn btn-sm btn-primary mr-1">Editar</NavLink>
+                        <button @onclick="@(() => DeleteCliente(cliente.id))" class="btn btn-sm btn-danger btn-delete-user">
+                            <span>Eliminar</span>
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+        @if (loading)
+        {
+            <tr>
+                <td colspan="4" class="text-center">
+                    <span class="spinner-border spinner-border-lg align-center"></span>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+@code {
+    private bool loading;
+    private IList<Cliente> clientes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        loading = true;
+        clientes = await ClienteService.GetAll();
+        loading = false;
+    }
+
+    private async void DeleteCliente(int id)
+    {
+        var cliente = clientes.First(x => x.id == id);
+        //customer.IsDeleting = true;
+        await ClienteService.Delete(id);
+        clientes.Remove(cliente);
+        StateHasChanged();
+    }
+}
